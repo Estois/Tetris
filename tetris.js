@@ -136,10 +136,15 @@ function playerReset() {
     player.pos.y = 0;
     player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length/2 | 0);
     if (collide(arena, player)) {
+        console.log("lose");
         arena.forEach(row => row.fill(0));
         player.score = 0;
         player.pieceCounter.fill(0);
         player.nextPieceID = pieces[sevenBagGen()];
+        player.matrix = createPiece(player.nextPieceID);
+        player.nextPieceID = pieces[sevenBagGen()];
+        console.log(player.nextPieceID);
+        console.log(player.pieceCounter);
         updateScore();
     }
 }
@@ -220,7 +225,7 @@ function update(time = 0) {
     lastTime = time;
     dropCounter += deltaTime;
     if (dropCounter >= dropInterval) {
-        playerDrop()
+        playerDrop();
     }
     draw();
     requestAnimationFrame(update);
