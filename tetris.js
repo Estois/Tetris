@@ -86,6 +86,8 @@ function createPiece(type) {
 }
 
 const colors = [null, 'purple', 'yellow', 'orange', 'blue', 'red', 'green', 'aqua'];
+const pieces = ['I', 'L', 'J', 'O', 'T', 'S', 'Z'];
+
 
 function draw() {
     context.fillStyle = '#000';
@@ -124,15 +126,48 @@ function playerMove(dir) {
 }
 
 function playerReset() {
-    const pieces = "ILJOTSZ";
-    player.matrix = createPiece(pieces[pieces.length * Math.random() | 0 ]);
+    if(player.nextPieceID === null) {
+        player.nextPieceID = pieces[sevenBagGen()];
+    }
+    player.matrix = createPiece(player.nextPieceID);
+    player.nextPieceID = pieces[sevenBagGen()];
+    console.log(player.nextPieceID);
+    console.log(player.pieceCounter);
     player.pos.y = 0;
     player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length/2 | 0);
     if (collide(arena, player)) {
+        console.log("lose");
         arena.forEach(row => row.fill(0));
         player.score = 0;
+        player.pieceCounter.fill(0);
+        player.nextPieceID = pieces[sevenBagGen()];
+        player.matrix = createPiece(player.nextPieceID);
+        player.nextPieceID = pieces[sevenBagGen()];
+        console.log(player.nextPieceID);
+        console.log(player.pieceCounter);
         updateScore();
     }
+}
+
+function sevenBagGen() {
+    if (pieceCounterChecker()) {
+        player.pieceCounter.fill(0);
+    }
+    let output = player.pieceCounter.length * Math.random() | 0;
+    while(player.pieceCounter[output] > 1) {
+        output = player.pieceCounter.length * Math.random() | 0;
+    }
+    player.pieceCounter[output]++;
+    return output;
+}
+
+function pieceCounterChecker() {
+    for(let x = 0; x<player.pieceCounter.length; x++) {
+        if(player.pieceCounter[x] < 2) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function playerRotate (dir) {
@@ -180,6 +215,7 @@ function playerDrop() {
         playerReset();
         arenaSweep();
         updateScore();
+        updateNextPiece();
     }
     dropCounter = 0;
 }
@@ -189,7 +225,7 @@ function update(time = 0) {
     lastTime = time;
     dropCounter += deltaTime;
     if (dropCounter >= dropInterval) {
-        playerDrop()
+        playerDrop();
     }
     draw();
     requestAnimationFrame(update);
@@ -199,6 +235,10 @@ function updateScore() {
     document.getElementById('score').innerText = player.score;
 }
 
+function updateNextPiece() {
+    document.getElementById('nextPiece').innerText = player.nextPieceID;
+}
+
 const arena = createMatrix(12,20);
 console.log(arena);
 console.table(arena);
@@ -206,7 +246,10 @@ console.table(arena);
 const player = {
     pos : {x:0, y:0},
     matrix: null,
+    holdPiece: null,
     score: 0,
+    pieceCounter: new Array(7).fill(0),
+    nextPieceID: null,
 };
 
 document.addEventListener('keydown', event => {
@@ -229,5 +272,6 @@ document.addEventListener('keydown', event => {
 
 playerReset();
 updateScore();
+updateNextPiece();
 update();
 //does it work?
